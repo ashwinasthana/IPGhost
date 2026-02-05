@@ -163,44 +163,31 @@ class IPGhost:
             return False
             
     def get_current_ip(self) -> Optional[str]:
-        """Get current IP address through Tor proxy"""
+        """Get current IP address through Tor proxy (simple like AutoTor)"""
         proxies = {
             'http': f'socks5://127.0.0.1:{self.config["tor_port"]}',
             'https': f'socks5://127.0.0.1:{self.config["tor_port"]}'
         }
         
-        for url in self.config["check_ip_urls"]:
-            try:
-                response = self.session.get(
-                    url, 
-                    proxies=proxies, 
-                    timeout=self.config["timeout"]
-                )
-                if response.status_code == 200:
-                    return response.text.strip()
-            except Exception as e:
-                self.logger.debug(f"Failed to get IP from {url}: {e}")
-                continue
-                
+        try:
+            response = requests.get(
+                'http://checkip.amazonaws.com', 
+                proxies=proxies, 
+                timeout=10
+            )
+            if response.status_code == 200:
+                return response.text.strip()
+        except Exception:
+            pass
         return None
         
     def change_ip(self) -> bool:
-        """Change IP by reloading Tor circuit"""
-        system = platform.system().lower()
-        
+        """Change IP by reloading Tor (simple like AutoTor)"""
         try:
-            if system == "linux":
-                subprocess.run(['sudo', 'systemctl', 'reload', 'tor'], check=True)
-            elif system == "darwin":
-                subprocess.run(['brew', 'services', 'restart', 'tor'], check=True)
-            else:
-                # Fallback: send NEWNYM signal to Tor control port
-                self.send_newnym_signal()
-                
-            time.sleep(2)  # Wait for circuit to establish
+            os.system("service tor reload")
+            time.sleep(2)
             return True
-        except subprocess.CalledProcessError as e:
-            self.logger.error(f"Failed to reload Tor: {e}")
+        except Exception:
             return False
             
     def send_newnym_signal(self):
@@ -256,22 +243,21 @@ class IPGhost:
                 self.logger.error("Failed to install Tor. Please install manually.")
                 return
                 
-        # Start Tor service
-        if not self.start_tor_service():
-            self.logger.error("Failed to start Tor service.")
-            return
-            
-        self.logger.info("Waiting for Tor to initialize...")
-        time.sleep(5)
+        # Start Tor service (simple like AutoTor)
+        os.system("service tor start")
         
-        # Get initial IP
+        # Wait for Tor to initialize
+        time.sleep(3)
+        
+        print("\033[1;32;40m change your SOCKS to 127.0.0.1:9050 \n")
+        
+        # Get initial IP (simple like AutoTor)
         initial_ip = self.get_current_ip()
-        if not initial_ip:
-            self.logger.error("Failed to connect through Tor. Check your configuration.")
-            return
-            
-        self.logger.info(f"Initial IP: {initial_ip}")
-        self.logger.info("Configure your browser/application to use SOCKS5 proxy: 127.0.0.1:9050")
+        if initial_ip:
+            print(f"[+] Current IP: {initial_ip}")
+        else:
+            print("[!] Could not get current IP, but continuing...")
+            initial_ip = "Unknown"
         
         # Get user preferences
         try:
@@ -298,14 +284,12 @@ class IPGhost:
                     
                 if self.change_ip():
                     new_ip = self.get_current_ip()
-                    if new_ip and new_ip != initial_ip:
+                    if new_ip:
                         changes += 1
-                        self.logger.info(f"[{changes}] IP changed to: {new_ip}")
+                        print(f'[+] Your IP has been Changed to : {new_ip}')
                         initial_ip = new_ip
                     else:
-                        self.logger.warning("IP change may have failed or same IP assigned")
-                else:
-                    self.logger.error("Failed to change IP")
+                        print('[!] Could not verify IP change')
                     
             except KeyboardInterrupt:
                 break

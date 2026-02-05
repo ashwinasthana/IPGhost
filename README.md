@@ -3,18 +3,17 @@
 **Advanced Tor IP Rotation Tool**  
 *Created by Ashwin Asthana*
 
-IPGhost is a sophisticated, cross-platform tool for automatic IP address rotation using the Tor network. It's designed with security, reliability, and ease of use in mind.
+IPGhost is a powerful, cross-platform tool for automatic IP address rotation using the Tor network. Built for privacy enthusiasts and security professionals who need reliable IP anonymization.
 
 ## ✨ Features
 
 - **Cross-Platform**: Works on Linux, macOS, and Windows
-- **Automatic Installation**: Installs and configures Tor automatically
-- **Smart Retry Logic**: Robust error handling and retry mechanisms
-- **Configuration Management**: JSON-based configuration with sensible defaults
-- **Logging**: Comprehensive logging to file and console
-- **Multiple IP Services**: Uses multiple IP checking services for reliability
-- **Graceful Shutdown**: Handles interrupts cleanly
-- **Service Management**: Automatic Tor service start/stop/reload
+- **Simple Installation**: One-command setup with automatic dependency handling
+- **Fast IP Rotation**: Quick and reliable IP address changes
+- **Clean Interface**: Professional terminal UI with colored output
+- **Automatic Tor Management**: Handles Tor service startup and configuration
+- **Flexible Timing**: Customizable rotation intervals
+- **Graceful Shutdown**: Clean exit with Ctrl+C handling
 
 ## 🚀 Quick Start
 
@@ -23,31 +22,24 @@ IPGhost is a sophisticated, cross-platform tool for automatic IP address rotatio
 1. **Clone the repository:**
    ```bash
    git clone <repository-url>
-   cd IPGhost
+   cd ipghost
    ```
 
 2. **Install IPGhost:**
    ```bash
-   # Linux/macOS (requires sudo)
-   sudo python3 install.py install
-   
-   # Windows (run as administrator)
-   python install.py install
+   sudo python3 install.py
    ```
+   - Press `Y` to install
+   - Press `N` to uninstall
 
 3. **Run IPGhost:**
    ```bash
-   # Linux/macOS
    ipghost
-   
-   # Windows
-   ipghost.bat
    ```
 
 ### Manual Usage
 
-If you prefer not to install system-wide:
-
+Run directly without installation:
 ```bash
 python3 ipghost.py
 ```
@@ -55,151 +47,124 @@ python3 ipghost.py
 ## 📋 Requirements
 
 - Python 3.6+
-- Tor (automatically installed if not present)
+- Tor (automatically installed)
 - Internet connection
 
-### Python Dependencies
-- `requests[socks]` (automatically installed)
+### Dependencies
+- `python3-requests`
+- `python3-socks`
 
-**For Debian/Ubuntu/Parrot OS users:**
-If you encounter "externally-managed-environment" error, run:
-```bash
-sudo apt install python3-requests python3-socks
-```
-
-## 🔧 Configuration
-
-IPGhost creates a configuration file at `~/.ipghost/config.json` with the following options:
-
-```json
-{
-  "tor_port": 9050,
-  "control_port": 9051,
-  "check_ip_urls": [
-    "http://checkip.amazonaws.com",
-    "http://ipinfo.io/ip",
-    "http://icanhazip.com"
-  ],
-  "timeout": 10,
-  "max_retries": 3
-}
-```
+**Note for Debian/Ubuntu/Parrot users:** Dependencies are automatically installed via apt.
 
 ## 🖥️ Usage
-
-### Basic Usage
 
 1. **Start IPGhost:**
    ```bash
    ipghost
    ```
 
-2. **Configure your browser/application:**
+2. **Configure your browser:**
    - Set SOCKS5 proxy to: `127.0.0.1:9050`
 
-3. **Set rotation parameters:**
+3. **Set parameters:**
    - IP change interval (default: 60 seconds)
    - Number of changes (0 for infinite)
 
 ### Browser Configuration
 
 #### Firefox
-1. Go to Settings → Network Settings
-2. Select "Manual proxy configuration"
-3. Set SOCKS Host: `127.0.0.1`, Port: `9050`
-4. Select "SOCKS v5"
+1. Settings → Network Settings
+2. Manual proxy configuration
+3. SOCKS Host: `127.0.0.1`, Port: `9050`
+4. Select SOCKS v5
 
 #### Chrome
-Use with proxy extensions or command line:
 ```bash
 google-chrome --proxy-server="socks5://127.0.0.1:9050"
 ```
 
-## 📊 Management Commands
+## 🔧 Configuration
 
-### Check Installation Status
-```bash
-python3 install.py status
-```
-
-### Uninstall
-```bash
-sudo python3 install.py uninstall  # Linux/macOS
-python install.py uninstall        # Windows
-```
+IPGhost automatically creates configuration files in `~/.ipghost/` with optimal settings for:
+- Tor port configuration
+- IP checking services
+- Timeout settings
+- Retry logic
 
 ## 🔍 Troubleshooting
 
 ### Common Issues
 
-1. **"externally-managed-environment" error (Debian/Ubuntu/Parrot):**
+1. **Dependencies error:**
    ```bash
    sudo apt install python3-requests python3-socks
    ```
-   Then retry installation.
 
-2. **"Tor not found" error:**
-   - IPGhost will attempt to install Tor automatically
-   - On some systems, manual installation may be required
+2. **Permission denied:**
+   - Run installer with `sudo`
 
-3. **Permission denied:**
-   - Run installer with `sudo` on Linux/macOS
-   - Run as administrator on Windows
+3. **Tor connection timeout:**
+   ```bash
+   sudo systemctl restart tor
+   # Wait 30 seconds, then retry
+   ```
 
-4. **Connection timeout:**
-   - Check if Tor service is running
-   - Verify firewall settings
-   - Try different IP checking URLs
-
-5. **IP not changing:**
-   - Tor may assign the same exit node
+4. **IP not changing:**
    - Wait longer between changes
-   - Check Tor logs for issues
+   - Check network connectivity
+   - Restart Tor service
 
 ### Logs
 
-Logs are stored at `~/.ipghost/ipghost.log` and include:
-- IP change events
-- Error messages
-- Service status updates
+Check logs at: `~/.ipghost/ipghost.log`
 
 ## 🛡️ Security Notes
 
-- IPGhost routes traffic through Tor for anonymity
-- Always verify your IP has changed before sensitive activities
-- Use HTTPS websites when possible for additional security
-- Be aware of DNS leaks - consider using Tor Browser for maximum security
+- Routes all traffic through Tor network
+- Verify IP changes before sensitive activities
+- Use HTTPS websites for additional security
+- Consider Tor Browser for maximum anonymity
 
-## 🔄 Comparison with Original
+## 📊 System Compatibility
 
-IPGhost improves upon the original Auto_Tor_IP_changer with:
+| OS | Status | Installation |
+|---|---|---|
+| Linux (Debian/Ubuntu) | ✅ Full Support | `sudo python3 install.py` |
+| Linux (Other) | ✅ Full Support | `sudo python3 install.py` |
+| macOS | ✅ Full Support | `sudo python3 install.py` |
+| Windows | ⚠️ Manual Setup | Run `python3 ipghost.py` |
 
-| Feature | Original | IPGhost |
-|---------|----------|---------|
-| Cross-platform | Linux only | Linux, macOS, Windows |
-| Error handling | Basic | Comprehensive |
-| Configuration | Hardcoded | JSON config file |
-| Logging | Print statements | Professional logging |
-| Installation | Manual | Automated installer |
-| Service management | Basic | Advanced |
-| Code quality | Basic | Production-ready |
-| Documentation | Minimal | Comprehensive |
+## 🎯 Use Cases
+
+- **Privacy Protection**: Anonymous web browsing
+- **Security Testing**: Penetration testing and research
+- **Geo-restriction Bypass**: Access region-locked content
+- **Development**: Testing applications with different IPs
+- **Research**: Academic and security research
 
 ## 📝 License
 
-This project is open source. Use responsibly and in accordance with local laws.
+Open source project. Use responsibly and in accordance with local laws.
 
 ## ⚠️ Disclaimer
 
-This tool is for educational and legitimate privacy purposes only. Users are responsible for complying with all applicable laws and regulations. The authors are not responsible for any misuse of this software.
+This tool is for educational and legitimate privacy purposes only. Users must comply with all applicable laws and regulations. The author is not responsible for any misuse.
 
 ## 🤝 Contributing
 
-Contributions are welcome! Please feel free to submit pull requests or open issues for bugs and feature requests.
+Contributions welcome! Submit pull requests or open issues for:
+- Bug reports
+- Feature requests
+- Documentation improvements
+- Code optimizations
 
 ## 📞 Support
 
-If you encounter issues:
-1. Check the troubleshooting section
-2. Review the logs at `~/.ipghost/ipghost.log`
-3. Open an issue with detailed information about your system and the problem
+Having issues?
+1. Check the troubleshooting section above
+2. Review logs at `~/.ipghost/ipghost.log`
+3. Open an issue with system details and error messages
+
+---
+
+**IPGhost** - Your digital anonymity companion 👻
