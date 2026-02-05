@@ -27,6 +27,51 @@ def get_ip():
     except:
         return None
 
+def shutdown_animation():
+    """Cool shutdown animation"""
+    import sys
+    
+    # Clear screen and show shutdown message
+    os.system("clear")
+    
+    # Animated shutdown sequence
+    messages = [
+        "\n\033[1;31m[!] Shutting down IPGhost...\033[0m",
+        "\033[1;33m[*] Cleaning up connections...\033[0m",
+        "\033[1;36m[*] Securing your tracks...\033[0m",
+        "\033[1;32m[✓] All connections closed safely\033[0m"
+    ]
+    
+    for msg in messages:
+        print(msg)
+        time.sleep(0.8)
+    
+    # Cool ASCII art goodbye
+    goodbye = """
+\033[1;35m
+    ╔═══════════════════════════════════╗
+    ║                                   ║
+    ║     👻 IPGhost Session Ended 👻    ║
+    ║                                   ║
+    ║    Stay Anonymous, Stay Safe!     ║
+    ║                                   ║
+    ║         by Ashwin Asthana         ║
+    ║                                   ║
+    ╚═══════════════════════════════════╝
+\033[0m
+    """
+    
+    print(goodbye)
+    
+    # Typing effect for final message
+    final_msg = "\033[1;32mYour digital footprints have been ghosted... 👻\033[0m"
+    for char in final_msg:
+        sys.stdout.write(char)
+        sys.stdout.flush()
+        time.sleep(0.05)
+    
+    print("\n")
+
 def change_ip():
     """Change IP and show result"""
     os.system("service tor reload")
@@ -35,8 +80,6 @@ def change_ip():
         print(f'[+] Your IP has been Changed to : {new_ip}')
     else:
         print('[!] Could not get new IP')
-
-def display_banner():
     """Display banner"""
     banner = """
 \033[1;32m
@@ -88,7 +131,7 @@ def main():
                     time.sleep(interval)
                     change_ip()
                 except KeyboardInterrupt:
-                    print('\nAuto IP changer is closed.')
+                    shutdown_animation()
                     break
         else:
             for _ in range(count):

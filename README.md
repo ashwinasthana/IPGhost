@@ -17,7 +17,7 @@ IPGhost is a powerful, cross-platform tool for automatic IP address rotation usi
 
 ## 🚀 Quick Start
 
-### Installation
+### Universal Installation
 
 1. **Clone the repository:**
    ```bash
@@ -25,24 +25,26 @@ IPGhost is a powerful, cross-platform tool for automatic IP address rotation usi
    cd ipghost
    ```
 
-2. **Install IPGhost:**
+2. **Install dependencies:**
    ```bash
-   sudo python3 install.py
+   # Linux (Debian/Ubuntu/Parrot)
+   sudo apt install python3-requests python3-socks tor
+   
+   # Linux (Red Hat/CentOS)
+   sudo yum install python3-requests python3-socks tor
+   
+   # macOS
+   brew install tor && pip3 install requests[socks]
+   
+   # Windows
+   pip install requests[socks]
+   # + Install Tor Browser manually
    ```
-   - Press `Y` to install
-   - Press `N` to uninstall
 
 3. **Run IPGhost:**
    ```bash
-   ipghost
+   sudo python3 ipghost.py
    ```
-
-### Manual Usage
-
-Run directly without installation:
-```bash
-python3 ipghost.py
-```
 
 ## 📋 Requirements
 
@@ -125,14 +127,50 @@ Check logs at: `~/.ipghost/ipghost.log`
 - Use HTTPS websites for additional security
 - Consider Tor Browser for maximum anonymity
 
-## 📊 System Compatibility
+## 📊 Cross-Platform Compatibility
 
-| OS | Status | Installation |
+| OS | Status | Setup Command |
 |---|---|---|
-| Linux (Debian/Ubuntu) | ✅ Full Support | `sudo python3 install.py` |
-| Linux (Other) | ✅ Full Support | `sudo python3 install.py` |
-| macOS | ✅ Full Support | `sudo python3 install.py` |
-| Windows | ⚠️ Manual Setup | Run `python3 ipghost.py` |
+| **Linux (Debian/Ubuntu/Parrot)** | ✅ Full Support | `sudo apt install python3-requests python3-socks tor` |
+| **Linux (Red Hat/CentOS)** | ✅ Full Support | `sudo yum install python3-requests python3-socks tor` |
+| **Linux (Arch)** | ✅ Full Support | `sudo pacman -S python-requests python-socks tor` |
+| **macOS** | ✅ Full Support | `brew install tor && pip3 install requests[socks]` |
+| **Windows** | ⚠️ Manual Setup | Install Tor Browser + `pip install requests[socks]` |
+
+### Universal Setup
+
+**For any Linux distribution:**
+```bash
+# Clone and setup
+git clone <repository-url>
+cd ipghost
+
+# Install dependencies (choose your package manager)
+sudo apt install python3-requests python3-socks tor     # Debian/Ubuntu/Parrot
+sudo yum install python3-requests python3-socks tor     # Red Hat/CentOS
+sudo pacman -S python-requests python-socks tor         # Arch Linux
+
+# Run IPGhost
+sudo python3 ipghost.py
+```
+
+**For macOS:**
+```bash
+# Install Homebrew if not installed
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+
+# Install dependencies
+brew install tor
+pip3 install requests[socks]
+
+# Run IPGhost
+sudo python3 ipghost.py
+```
+
+**For Windows:**
+1. Install [Tor Browser](https://www.torproject.org/download/)
+2. Install Python dependencies: `pip install requests[socks]`
+3. Run: `python ipghost.py`
 
 ## 🎯 Use Cases
 
