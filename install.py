@@ -28,10 +28,30 @@ class IPGhostInstaller:
         """Install Python dependencies"""
         print("Installing Python dependencies...")
         try:
-            subprocess.check_call([sys.executable, "-m", "pip", "install", "requests[socks]"])
-            print("✓ Dependencies installed successfully")
+            # Try system package manager first
+            system = platform.system().lower()
+            if system == "linux":
+                # Try apt first (Debian/Ubuntu/Parrot)
+                if subprocess.run(['which', 'apt'], capture_output=True).returncode == 0:
+                    try:
+                        subprocess.check_call(['apt', 'install', '-y', 'python3-requests', 'python3-socks'])
+                        print("✓ Dependencies installed via apt")
+                        return True
+                    except subprocess.CalledProcessError:
+                        pass
+                        
+            # Fallback to pip with --break-system-packages if needed
+            try:
+                subprocess.check_call([sys.executable, "-m", "pip", "install", "requests[socks]"])
+                print("✓ Dependencies installed via pip")
+            except subprocess.CalledProcessError:
+                # Try with --break-system-packages for externally managed environments
+                subprocess.check_call([sys.executable, "-m", "pip", "install", "--break-system-packages", "requests[socks]"])
+                print("✓ Dependencies installed via pip (system override)")
+                
         except subprocess.CalledProcessError as e:
             print(f"✗ Failed to install dependencies: {e}")
+            print("Please install manually: apt install python3-requests python3-socks")
             return False
         return True
         

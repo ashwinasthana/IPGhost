@@ -22,7 +22,14 @@ try:
     from urllib3.util.retry import Retry
 except ImportError:
     print("Installing required dependencies...")
-    subprocess.check_call([sys.executable, "-m", "pip", "install", "requests[socks]"])
+    try:
+        # Try system packages first
+        subprocess.check_call(['apt', 'install', '-y', 'python3-requests', 'python3-socks'])
+    except (subprocess.CalledProcessError, FileNotFoundError):
+        try:
+            subprocess.check_call([sys.executable, "-m", "pip", "install", "requests[socks]"])
+        except subprocess.CalledProcessError:
+            subprocess.check_call([sys.executable, "-m", "pip", "install", "--break-system-packages", "requests[socks]"])
     import requests
     from requests.adapters import HTTPAdapter
     from urllib3.util.retry import Retry
