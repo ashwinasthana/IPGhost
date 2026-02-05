@@ -7,9 +7,11 @@ IPGhost is a powerful, cross-platform tool for automatic IP address rotation usi
 
 ## ✨ Features
 
-- **Cross-Platform**: Works on Linux, macOS, and Windows
+- **Universal Cross-Platform**: Automatically detects and works on Windows, macOS, and Linux
+- **Smart OS Detection**: Uses appropriate commands for each operating system
 - **Simple Installation**: One-command setup with automatic dependency handling
 - **Fast IP Rotation**: Quick and reliable IP address changes
+- **Cool Animations**: Professional shutdown sequence with ASCII art
 - **Clean Interface**: Professional terminal UI with colored output
 - **Automatic Tor Management**: Handles Tor service startup and configuration
 - **Flexible Timing**: Customizable rotation intervals
@@ -38,13 +40,19 @@ IPGhost is a powerful, cross-platform tool for automatic IP address rotation usi
    
    # Windows
    pip install requests[socks]
-   # + Install Tor Browser manually
+   # Download and run Tor Browser
    ```
 
 3. **Run IPGhost:**
    ```bash
+   # Linux/macOS
    sudo python3 ipghost.py
+   
+   # Windows
+   python ipghost.py
    ```
+
+**Note:** IPGhost automatically detects your operating system and uses the appropriate commands!
 
 ## 📋 Requirements
 
@@ -111,14 +119,15 @@ IPGhost automatically creates configuration files in `~/.ipghost/` with optimal 
    # Wait 30 seconds, then retry
    ```
 
-4. **IP not changing:**
+4. **Windows-specific notes:**
+   - Keep Tor Browser running in the background
+   - IPGhost will guide you through the setup process
+   - IP changes work by requesting new Tor circuits
+
+5. **IP not changing:**
    - Wait longer between changes
    - Check network connectivity
-   - Restart Tor service
-
-### Logs
-
-Check logs at: `~/.ipghost/ipghost.log`
+   - Restart Tor service (Linux/macOS) or Tor Browser (Windows)
 
 ## 🛡️ Security Notes
 
@@ -135,7 +144,7 @@ Check logs at: `~/.ipghost/ipghost.log`
 | **Linux (Red Hat/CentOS)** | ✅ Full Support | `sudo yum install python3-requests python3-socks tor` |
 | **Linux (Arch)** | ✅ Full Support | `sudo pacman -S python-requests python-socks tor` |
 | **macOS** | ✅ Full Support | `brew install tor && pip3 install requests[socks]` |
-| **Windows** | ⚠️ Manual Setup | Install Tor Browser + `pip install requests[socks]` |
+| **Windows** | ✅ Full Support | Install Tor Browser + `pip install requests[socks]` |
 
 ### Universal Setup
 
@@ -168,9 +177,10 @@ sudo python3 ipghost.py
 ```
 
 **For Windows:**
-1. Install [Tor Browser](https://www.torproject.org/download/)
+1. Install [Tor Browser](https://www.torproject.org/download/) and keep it running
 2. Install Python dependencies: `pip install requests[socks]`
 3. Run: `python ipghost.py`
+4. IPGhost will automatically detect Windows and guide you through setup
 
 ## 🎯 Use Cases
 

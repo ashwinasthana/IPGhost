@@ -7,12 +7,17 @@ Created by Ashwin Asthana
 import time
 import os
 import subprocess
+import platform
 
 try:
     import requests
 except ImportError:
     print('[+] Installing requests...')
-    os.system('apt install -y python3-requests python3-socks')
+    system = platform.system().lower()
+    if system == "windows":
+        os.system('pip install requests[socks]')
+    else:
+        os.system('apt install -y python3-requests python3-socks')
     import requests
 
 def get_ip():
@@ -31,8 +36,8 @@ def shutdown_animation():
     """Cool shutdown animation"""
     import sys
     
-    # Clear screen and show shutdown message
-    os.system("clear")
+    # Clear screen (cross-platform)
+    os.system("cls" if platform.system() == "Windows" else "clear")
     
     # Animated shutdown sequence
     messages = [
@@ -73,13 +78,27 @@ def shutdown_animation():
     print("\n")
 
 def change_ip():
-    """Change IP and show result"""
-    os.system("service tor reload")
+    """Change IP and show result (cross-platform)"""
+    system = platform.system().lower()
+    
+    if system == "windows":
+        # Windows: Restart Tor Browser or service
+        print("[*] Requesting new Tor circuit...")
+        # Note: Windows users need to manually restart Tor Browser
+        # or use Tor service if installed
+    elif system == "darwin":  # macOS
+        os.system("brew services restart tor")
+    else:  # Linux
+        os.system("service tor reload")
+    
+    time.sleep(2)  # Wait for new circuit
     new_ip = get_ip()
     if new_ip:
         print(f'[+] Your IP has been Changed to : {new_ip}')
     else:
         print('[!] Could not get new IP')
+
+def display_banner():
     """Display banner"""
     banner = """
 \033[1;32m
@@ -100,11 +119,22 @@ def change_ip():
     print(banner)
 
 def main():
-    os.system("clear")
+    # Clear screen (cross-platform)
+    os.system("cls" if platform.system() == "Windows" else "clear")
     display_banner()
     
-    # Start Tor
-    os.system("service tor start")
+    system = platform.system().lower()
+    
+    # Start Tor (cross-platform)
+    if system == "windows":
+        print("[*] Please ensure Tor Browser is running or Tor service is started")
+        print("[*] Tor Browser: Start and keep running in background")
+        print("[*] Or install Tor service for Windows")
+    elif system == "darwin":  # macOS
+        os.system("brew services start tor")
+    else:  # Linux
+        os.system("service tor start")
+    
     time.sleep(3)
     
     print("\033[1;32;40m change your SOCKS to 127.0.0.1:9050 \n")
@@ -115,6 +145,8 @@ def main():
         print(f"[+] Current IP: {initial_ip}")
     else:
         print("[!] Could not get current IP, but continuing...")
+        if system == "windows":
+            print("[!] Make sure Tor Browser is running!")
     
     # Get user input
     interval = input("\n[+] IP change interval in seconds [60]: ") or "60"
