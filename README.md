@@ -61,6 +61,12 @@ python3 ipghost.py
 ### Python Dependencies
 - `requests[socks]` (automatically installed)
 
+**For Debian/Ubuntu/Parrot OS users:**
+If you encounter "externally-managed-environment" error, run:
+```bash
+sudo apt install python3-requests python3-socks
+```
+
 ## 🔧 Configuration
 
 IPGhost creates a configuration file at `~/.ipghost/config.json` with the following options:
@@ -126,20 +132,26 @@ python install.py uninstall        # Windows
 
 ### Common Issues
 
-1. **"Tor not found" error:**
+1. **"externally-managed-environment" error (Debian/Ubuntu/Parrot):**
+   ```bash
+   sudo apt install python3-requests python3-socks
+   ```
+   Then retry installation.
+
+2. **"Tor not found" error:**
    - IPGhost will attempt to install Tor automatically
    - On some systems, manual installation may be required
 
-2. **Permission denied:**
+3. **Permission denied:**
    - Run installer with `sudo` on Linux/macOS
    - Run as administrator on Windows
 
-3. **Connection timeout:**
+4. **Connection timeout:**
    - Check if Tor service is running
    - Verify firewall settings
    - Try different IP checking URLs
 
-4. **IP not changing:**
+5. **IP not changing:**
    - Tor may assign the same exit node
    - Wait longer between changes
    - Check Tor logs for issues
