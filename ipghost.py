@@ -181,14 +181,15 @@ class IPGhost:
             pass
         return None
         
-    def change_ip(self) -> bool:
-        """Change IP by reloading Tor (simple like AutoTor)"""
-        try:
-            os.system("service tor reload")
-            time.sleep(2)
-            return True
-        except Exception:
-            return False
+    def change_ip_and_show(self):
+        """Change IP and show new IP (exactly like AutoTor's change() function)"""
+        os.system("service tor reload")
+        new_ip = self.get_current_ip()
+        if new_ip:
+            print(f'[+] Your IP has been Changed to : {new_ip}')
+        else:
+            print('[!] Could not get new IP')
+        return new_ip is not None
             
     def send_newnym_signal(self):
         """Send NEWNYM signal to Tor control port"""
@@ -265,14 +266,12 @@ class IPGhost:
             count_input = input("[+] Number of IP changes [0 for infinite]: ") or "0"
             count = int(count_input) if count_input.isdigit() else 0
         except ValueError:
-            self.logger.error("Invalid input. Using defaults.")
             interval, count = 60, 0
             
-        self.logger.info(f"Starting IP rotation every {interval} seconds...")
         if count == 0:
-            self.logger.info("Running indefinitely. Press Ctrl+C to stop.")
+            print("Starting infinite IP change. Press Ctrl+C to stop.")
         else:
-            self.logger.info(f"Will change IP {count} times.")
+            print(f"Will change IP {count} times.")
             
         # Main loop
         changes = 0
@@ -282,19 +281,13 @@ class IPGhost:
                 if not self.running:
                     break
                     
-                if self.change_ip():
-                    new_ip = self.get_current_ip()
-                    if new_ip:
-                        changes += 1
-                        print(f'[+] Your IP has been Changed to : {new_ip}')
-                        initial_ip = new_ip
-                    else:
-                        print('[!] Could not verify IP change')
+                self.change_ip_and_show()
+                changes += 1
                     
             except KeyboardInterrupt:
                 break
                 
-        self.logger.info("IPGhost stopped. Stay anonymous!")
+        print('\nAuto IP changer is closed.')
 
 def main():
     """Entry point"""
