@@ -1,217 +1,44 @@
 #!/usr/bin/env python3
 """
 IPGhost - Advanced Tor IP Changer
-A sophisticated tool for automatic IP address rotation using Tor network
 Created by Ashwin Asthana
 """
 
-import os
-import sys
 import time
-import json
-import signal
-import logging
-import platform
+import os
 import subprocess
-from pathlib import Path
-from typing import Optional, Dict, Any
 
 try:
     import requests
-    from requests.adapters import HTTPAdapter
-    from urllib3.util.retry import Retry
 except ImportError:
-    print("Installing required dependencies...")
-    try:
-        # Try system packages first
-        subprocess.check_call(['apt', 'install', '-y', 'python3-requests', 'python3-socks'])
-    except (subprocess.CalledProcessError, FileNotFoundError):
-        try:
-            subprocess.check_call([sys.executable, "-m", "pip", "install", "requests[socks]"])
-        except subprocess.CalledProcessError:
-            subprocess.check_call([sys.executable, "-m", "pip", "install", "--break-system-packages", "requests[socks]"])
+    print('[+] Installing requests...')
+    os.system('apt install -y python3-requests python3-socks')
     import requests
-    from requests.adapters import HTTPAdapter
-    from urllib3.util.retry import Retry
 
-class IPGhost:
-    def __init__(self):
-        self.config_file = Path.home() / ".ipghost" / "config.json"
-        self.log_file = Path.home() / ".ipghost" / "ipghost.log"
-        self.setup_directories()
-        self.setup_logging()
-        self.config = self.load_config()
-        self.session = self.create_session()
-        self.running = True
-        
-    def setup_directories(self):
-        """Create necessary directories"""
-        config_dir = Path.home() / ".ipghost"
-        config_dir.mkdir(exist_ok=True)
-        
-    def setup_logging(self):
-        """Setup logging configuration"""
-        logging.basicConfig(
-            level=logging.INFO,
-            format='%(asctime)s - %(levelname)s - %(message)s',
-            handlers=[
-                logging.FileHandler(self.log_file),
-                logging.StreamHandler()
-            ]
+def get_ip():
+    """Get current IP through Tor proxy"""
+    try:
+        response = requests.get(
+            'http://checkip.amazonaws.com',
+            proxies={'http': 'socks5://127.0.0.1:9050', 'https': 'socks5://127.0.0.1:9050'},
+            timeout=10
         )
-        self.logger = logging.getLogger(__name__)
-        
-    def load_config(self) -> Dict[str, Any]:
-        """Load configuration from file"""
-        default_config = {
-            "tor_port": 9050,
-            "control_port": 9051,
-            "check_ip_urls": [
-                "http://checkip.amazonaws.com",
-                "http://ipinfo.io/ip",
-                "http://icanhazip.com"
-            ],
-            "timeout": 10,
-            "max_retries": 3
-        }
-        
-        if self.config_file.exists():
-            try:
-                with open(self.config_file, 'r') as f:
-                    config = json.load(f)
-                    return {**default_config, **config}
-            except Exception as e:
-                self.logger.warning(f"Failed to load config: {e}. Using defaults.")
-                
-        self.save_config(default_config)
-        return default_config
-        
-    def save_config(self, config: Dict[str, Any]):
-        """Save configuration to file"""
-        try:
-            with open(self.config_file, 'w') as f:
-                json.dump(config, f, indent=2)
-        except Exception as e:
-            self.logger.error(f"Failed to save config: {e}")
-            
-    def create_session(self) -> requests.Session:
-        """Create requests session with retry strategy"""
-        session = requests.Session()
-        retry_strategy = Retry(
-            total=self.config["max_retries"],
-            backoff_factor=1,
-            status_forcelist=[429, 500, 502, 503, 504]
-        )
-        adapter = HTTPAdapter(max_retries=retry_strategy)
-        session.mount("http://", adapter)
-        session.mount("https://", adapter)
-        return session
-        
-    def check_tor_installation(self) -> bool:
-        """Check if Tor is installed"""
-        try:
-            result = subprocess.run(['tor', '--version'], 
-                                  capture_output=True, text=True, timeout=5)
-            return result.returncode == 0
-        except (subprocess.TimeoutExpired, FileNotFoundError):
-            return False
-            
-    def install_tor(self) -> bool:
-        """Install Tor based on the operating system"""
-        system = platform.system().lower()
-        
-        try:
-            if system == "linux":
-                # Check for different package managers
-                if subprocess.run(['which', 'apt'], capture_output=True).returncode == 0:
-                    subprocess.run(['sudo', 'apt', 'update'], check=True)
-                    subprocess.run(['sudo', 'apt', 'install', 'tor', '-y'], check=True)
-                elif subprocess.run(['which', 'yum'], capture_output=True).returncode == 0:
-                    subprocess.run(['sudo', 'yum', 'install', 'tor', '-y'], check=True)
-                elif subprocess.run(['which', 'pacman'], capture_output=True).returncode == 0:
-                    subprocess.run(['sudo', 'pacman', '-S', 'tor', '--noconfirm'], check=True)
-                    
-            elif system == "darwin":  # macOS
-                if subprocess.run(['which', 'brew'], capture_output=True).returncode == 0:
-                    subprocess.run(['brew', 'install', 'tor'], check=True)
-                else:
-                    self.logger.error("Homebrew not found. Please install Homebrew first.")
-                    return False
-                    
-            elif system == "windows":
-                self.logger.error("Please install Tor Browser or Tor service manually on Windows")
-                return False
-                
-            return True
-        except subprocess.CalledProcessError as e:
-            self.logger.error(f"Failed to install Tor: {e}")
-            return False
-            
-    def start_tor_service(self) -> bool:
-        """Start Tor service"""
-        system = platform.system().lower()
-        
-        try:
-            if system == "linux":
-                subprocess.run(['sudo', 'systemctl', 'start', 'tor'], check=True)
-                subprocess.run(['sudo', 'systemctl', 'enable', 'tor'], check=True)
-            elif system == "darwin":
-                subprocess.run(['brew', 'services', 'start', 'tor'], check=True)
-            return True
-        except subprocess.CalledProcessError as e:
-            self.logger.error(f"Failed to start Tor service: {e}")
-            return False
-            
-    def get_current_ip(self) -> Optional[str]:
-        """Get current IP address through Tor proxy (simple like AutoTor)"""
-        proxies = {
-            'http': f'socks5://127.0.0.1:{self.config["tor_port"]}',
-            'https': f'socks5://127.0.0.1:{self.config["tor_port"]}'
-        }
-        
-        try:
-            response = requests.get(
-                'http://checkip.amazonaws.com', 
-                proxies=proxies, 
-                timeout=10
-            )
-            if response.status_code == 200:
-                return response.text.strip()
-        except Exception:
-            pass
+        return response.text.strip()
+    except:
         return None
-        
-    def change_ip_and_show(self):
-        """Change IP and show new IP (exactly like AutoTor's change() function)"""
-        os.system("service tor reload")
-        new_ip = self.get_current_ip()
-        if new_ip:
-            print(f'[+] Your IP has been Changed to : {new_ip}')
-        else:
-            print('[!] Could not get new IP')
-        return new_ip is not None
-            
-    def send_newnym_signal(self):
-        """Send NEWNYM signal to Tor control port"""
-        try:
-            import socket
-            with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-                s.connect(('127.0.0.1', self.config["control_port"]))
-                s.send(b'AUTHENTICATE\r\n')
-                s.recv(1024)
-                s.send(b'SIGNAL NEWNYM\r\n')
-                s.recv(1024)
-        except Exception as e:
-            self.logger.debug(f"Failed to send NEWNYM signal: {e}")
-            
-    def signal_handler(self, signum, frame):
-        """Handle interrupt signals"""
-        self.logger.info("\nReceived interrupt signal. Shutting down gracefully...")
-        self.running = False
-        
-    def display_banner(self):
-        """Display application banner"""
-        banner = """
+
+def change_ip():
+    """Change IP and show result"""
+    os.system("service tor reload")
+    new_ip = get_ip()
+    if new_ip:
+        print(f'[+] Your IP has been Changed to : {new_ip}')
+    else:
+        print('[!] Could not get new IP')
+
+def display_banner():
+    """Display banner"""
+    banner = """
 \033[1;32m
  ██▓ ██▓███    ▄████  ██░ ██  ▒█████   ██████ ▄▄▄█████▓
 ▓██▒▓██░  ██▒ ██▒ ▀█▒▓██░ ██▒▒██▒  ██▒▒██    ▒ ▓  ██▒ ▓▒
@@ -226,77 +53,50 @@ class IPGhost:
 \033[1;36mAdvanced Tor IP Rotation Tool v3.0\033[0m
 \033[1;33mSecure • Fast • Reliable\033[0m
 \033[1;90mby Ashwin Asthana\033[0m
-        """
-        print(banner)
-        
-    def run(self):
-        """Main execution function"""
-        # Setup signal handlers
-        signal.signal(signal.SIGINT, self.signal_handler)
-        signal.signal(signal.SIGTERM, self.signal_handler)
-        
-        self.display_banner()
-        
-        # Check Tor installation
-        if not self.check_tor_installation():
-            self.logger.info("Tor not found. Installing...")
-            if not self.install_tor():
-                self.logger.error("Failed to install Tor. Please install manually.")
-                return
-                
-        # Start Tor service (simple like AutoTor)
-        os.system("service tor start")
-        
-        # Wait for Tor to initialize
-        time.sleep(3)
-        
-        print("\033[1;32;40m change your SOCKS to 127.0.0.1:9050 \n")
-        
-        # Get initial IP (simple like AutoTor)
-        initial_ip = self.get_current_ip()
-        if initial_ip:
-            print(f"[+] Current IP: {initial_ip}")
-        else:
-            print("[!] Could not get current IP, but continuing...")
-            initial_ip = "Unknown"
-        
-        # Get user preferences
-        try:
-            interval = int(input("\n[+] IP change interval in seconds [60]: ") or "60")
-            count_input = input("[+] Number of IP changes [0 for infinite]: ") or "0"
-            count = int(count_input) if count_input.isdigit() else 0
-        except ValueError:
-            interval, count = 60, 0
-            
-        if count == 0:
-            print("Starting infinite IP change. Press Ctrl+C to stop.")
-        else:
-            print(f"Will change IP {count} times.")
-            
-        # Main loop
-        changes = 0
-        while self.running and (count == 0 or changes < count):
-            try:
-                time.sleep(interval)
-                if not self.running:
-                    break
-                    
-                self.change_ip_and_show()
-                changes += 1
-                    
-            except KeyboardInterrupt:
-                break
-                
-        print('\nAuto IP changer is closed.')
+    """
+    print(banner)
 
 def main():
-    """Entry point"""
+    os.system("clear")
+    display_banner()
+    
+    # Start Tor
+    os.system("service tor start")
+    time.sleep(3)
+    
+    print("\033[1;32;40m change your SOCKS to 127.0.0.1:9050 \n")
+    
+    # Get initial IP
+    initial_ip = get_ip()
+    if initial_ip:
+        print(f"[+] Current IP: {initial_ip}")
+    else:
+        print("[!] Could not get current IP, but continuing...")
+    
+    # Get user input
+    interval = input("\n[+] IP change interval in seconds [60]: ") or "60"
+    count = input("[+] Number of IP changes [0 for infinite]: ") or "0"
+    
     try:
-        ghost = IPGhost()
-        ghost.run()
-    except Exception as e:
-        logging.error(f"Unexpected error: {e}")
-        sys.exit(1)
+        interval = int(interval)
+        count = int(count)
+        
+        if count == 0:
+            print("Starting infinite IP change. Press Ctrl+C to stop.")
+            while True:
+                try:
+                    time.sleep(interval)
+                    change_ip()
+                except KeyboardInterrupt:
+                    print('\nAuto IP changer is closed.')
+                    break
+        else:
+            for _ in range(count):
+                time.sleep(interval)
+                change_ip()
+                
+    except ValueError:
+        print("Invalid input. Please enter valid numbers.")
 
 if __name__ == "__main__":
     main()
