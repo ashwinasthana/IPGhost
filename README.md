@@ -200,7 +200,7 @@ This tool is for educational and legitimate privacy purposes only. Users must co
 
 ## 🤝 Contributing
 
-Contributions welcome! Submit pull requests or open issues for:
+Contributions are welcome! Submit pull requests or open issues for:
 - Bug reports
 - Feature requests
 - Documentation improvements
